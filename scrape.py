@@ -1,5 +1,5 @@
 from selectorlib import Extractor
-import requests 
+import requests
 from time import sleep
 import csv
 import random
@@ -7,7 +7,7 @@ import random
 # Create an Extractor by reading from the YAML file
 e = Extractor.from_yaml_file('booking.yml')
 
-def scrape(url):    
+def scrape(url):
     headers = {
         'Connection': 'keep-alive',
         'Pragma': 'no-cache',
@@ -21,12 +21,13 @@ def scrape(url):
     }
 
     # Download the page using requests
-    print("Downloading %s"%url)
+    print("Downloading %s" % url)
     r = requests.get(url, headers=headers)
-    # Pass the HTML of the page and create 
-    return e.extract(r.text,base_url=url)
+    # Pass the HTML of the page and create
+    data = e.extract(r.text, base_url=url)
+    return data
 
-with open("urls.txt",'r') as urllist, open('data.csv','w') as outfile:
+with open("urls.txt", 'r') as urllist, open('data.csv', 'w', newline='', encoding='utf-8') as outfile:
     fieldnames = [
         "name",
         "location",
@@ -39,11 +40,12 @@ with open("urls.txt",'r') as urllist, open('data.csv','w') as outfile:
         "number_of_ratings",
         "url"
     ]
-    writer = csv.DictWriter(outfile, fieldnames=fieldnames,quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(outfile, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
     writer.writeheader()
+    
     for url in urllist.readlines():
-        data = scrape(url.strip()) 
+        data = scrape(url.strip())
         if data and 'hotels' in data:
-            for h in data['hotels']:
-                writer.writerow(h)
+            for hotel in data['hotels']:
+                writer.writerow(hotel)
             sleep(random.uniform(3, 5))  # Use random sleep between 3 and 5 seconds
